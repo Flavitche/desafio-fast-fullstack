@@ -62,7 +62,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Libera o frontend (React + Vite, rodando em localhost:5173) a consumir a API.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+// Popula o banco com dados de exemplo, caso ainda esteja vazio
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DbSeeder.Popular(context);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -72,6 +90,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("PermitirFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
