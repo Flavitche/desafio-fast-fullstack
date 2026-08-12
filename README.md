@@ -74,6 +74,14 @@ backend/
 - ✅ Autenticação e autorização via JWT
 - ✅ Documentação interativa via Swagger (com suporte a autenticação JWT)
 
+### Dados de exemplo (seed automático)
+
+Para facilitar a avaliação do projeto, a aplicação popula automaticamente o banco de dados com dados de exemplo na primeira vez que é executada — não é necessário nenhum passo manual adicional.
+
+Isso funciona da seguinte forma: sempre que a aplicação inicia, ela verifica se já existe algum workshop cadastrado no banco. Se o banco estiver vazio (como acontece logo após seguir os passos de instalação abaixo), ela insere automaticamente **10 colaboradores** e **6 workshops** de exemplo, já com colaboradores marcados como presentes em cada um. Se o banco já tiver dados (de um uso anterior), esse processo é ignorado, para não duplicar informações.
+
+Ou seja: ao seguir o passo a passo de instalação abaixo, o projeto já estará pronto para uso, com dados reais para visualizar — sem necessidade de cadastrar nada manualmente antes de explorar a API (embora seja perfeitamente possível criar, editar e remover dados livremente, para testar o CRUD completo).
+
 ### Como rodar o projeto localmente
 
 **Antes de começar, é preciso ter instalado:**
@@ -127,13 +135,116 @@ Com a aplicação rodando, abra o navegador e acesse o endereço mostrado no ter
 
 ## 🎨 Frontend
 
-*(Seção a ser preenchida na próxima etapa do desafio.)*
+Interface web desenvolvida em **React**, responsável por consumir a API REST desenvolvida na etapa de Backend e apresentar a participação dos colaboradores nos workshops trimestrais. Não utiliza dados mockados — todas as informações vêm diretamente do banco de dados relacional, através da API.
+
+### Tecnologias utilizadas
+
+- **React 18 / Vite** — biblioteca e build tool
+- **React Router** — navegação entre as telas
+- **Axios** — consumo da API REST, com interceptor para anexar o token JWT em toda requisição
+- **Recharts** — gráficos de participação
+- **lucide-react** — ícones
+
+### Arquitetura
+
+O projeto separa responsabilidades por camada, de forma parecida com a organização do Backend:
+
+- **`api/`** — centraliza toda a comunicação com a API (autenticação, colaboradores, workshops) e o cliente Axios com o interceptor de JWT
+- **`context/`** — gerencia o estado de autenticação (usuário logado, token) de forma global
+- **`components/`** — peças de interface reutilizáveis entre as telas (sidebar, cards, modais, estados de carregamento/erro)
+- **`pages/`** — cada tela da aplicação (Login, Colaboradores, Workshops, Detalhes do Workshop, Dashboard)
+
+### Estrutura de pastas
+
+```
+frontend/
+└── FastChallenge.Web/
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    ├── .env.example
+    ├── public/
+    │   └── favicon.svg
+    └── src/
+        ├── main.jsx
+        ├── App.jsx
+        ├── api/
+        │   └── index.js
+        ├── context/
+        │   └── AuthContext.jsx
+        ├── components/
+        │   ├── Sidebar.jsx
+        │   ├── ProtectedRoute.jsx
+        │   ├── WorkshopTicketCard.jsx
+        │   └── UI.jsx
+        ├── pages/
+        │   ├── Login.jsx
+        │   ├── Colaboradores.jsx
+        │   ├── Workshops.jsx
+        │   ├── WorkshopDetalhe.jsx
+        │   └── Dashboard.jsx
+        └── styles/
+            └── global.css
+```
+
+### Funcionalidades implementadas
+
+**Telas obrigatórias:**
+- Tela 1 — listagem de todos os colaboradores
+- Tela 2 — listagem de todos os workshops
+- Ao clicar em um workshop, exibição dos detalhes completos, incluindo a lista de colaboradores presentes (ata de presença)
+
+**Login:**
+- Tela de autenticação que consome `POST /api/auth/login` e armazena o token JWT, necessário para acessar os demais endpoints da API
+
+**Bônus implementados:**
+- ✅ Integração real com o backend desenvolvido (sem dados mockados)
+- ✅ Gráfico de barras — quantidade de workshops que cada colaborador participou
+- ✅ Gráfico de pizza — quantidade de colaboradores por workshop
+- ✅ CRUD completo pela interface (criação, edição e remoção de colaboradores e workshops, além de registrar/remover presença), não apenas a listagem exigida no enunciado
+
+### Como rodar o projeto localmente
+
+**Pré-requisito:** a API do Backend precisa estar rodando (veja os passos na seção acima). Por padrão, o frontend espera a API em `http://localhost:5123/api`.
+
+**Passo 1 — Instalar as dependências**
+
+Dentro da pasta `frontend/FastChallenge.Web`, execute:
+
+```
+npm install
+```
+
+**Passo 2 — Configurar a URL da API**
+
+Copie o arquivo `.env.example` para `.env`. Se sua API estiver rodando em outra porta, ajuste a variável `VITE_API_URL` nesse arquivo.
+
+**Passo 3 — Rodar a aplicação**
+
+```
+npm run dev
+```
+
+O terminal vai exibir o endereço local, geralmente `http://localhost:5173`.
+
+**Passo 4 — Login**
+
+Use as mesmas credenciais fixas do backend:
+
+```json
+{
+  "usuario": "admin",
+  "senha": "123456"
+}
+```
+
+> ⚠️ **Nota:** para que o navegador permita a comunicação entre o frontend (`localhost:5173`) e a API (`localhost:5123`), foi necessário habilitar CORS no `Program.cs` do backend, liberando especificamente a origem do frontend.
 
 ---
 
 ## 🤖 Uso de Inteligência Artificial
 
-Utilizei o Claude (Anthropic) como apoio durante todo o desenvolvimento do backend — para tirar dúvidas conceituais, revisar decisões de arquitetura e resolver problemas pontuais. Abaixo, destaco os momentos em que a IA influenciou decisões técnicas relevantes, com o contexto e a escolha final que tomei.
+Utilizei o Claude (Anthropic) como apoio durante todo o desenvolvimento do projeto — tanto no Backend quanto no Frontend — para tirar dúvidas conceituais, revisar decisões de arquitetura e resolver problemas pontuais. Abaixo, destaco os momentos em que a IA influenciou decisões técnicas relevantes, com o contexto e a escolha final que tomei.
 
 ### 1. Como representar a presença de colaboradores em um workshop
 
@@ -167,10 +278,27 @@ Utilizei o Claude (Anthropic) como apoio durante todo o desenvolvimento do backe
 
 **Decisão tomada:** implementei validação de nome obrigatório (2 a 100 caracteres) para colaboradores e workshops, e tornei a data de realização do workshop obrigatória — mas optei por **não bloquear datas no passado**, já que pode ser útil cadastrar workshops que já ocorreram, para fins de histórico.
 
+### 5. Escolha da tecnologia do Frontend
+
+**Contexto:** era preciso decidir qual tecnologia usar para desenvolver a interface web, já que o desafio pede apenas "JavaScript", sem especificar um framework.
+
+**Prompt usado (resumido):** pedi uma comparação entre as opções mais comuns para esse tipo de interface.
+
+**Decisão tomada:** optei por React, por ser uma tecnologia mais simples de estruturar para o meu nível de experiência atual, com bastante documentação e exemplos disponíveis, além de se encaixar perfeitamente no requisito de "JavaScript" pedido pelo desafio.
+
 ---
 
 ## 📋 Critérios atendidos
 
+**Backend:**
 - ✅ Funcionalidade — CRUD completo de Colaboradores e Workshops, com rastreamento de presença
 - ✅ Estrutura do código — arquitetura em camadas (Controller/Service/Repository), Clean Code
 - ✅ Bônus — Banco de dados relacional, Autenticação JWT, Documentação Swagger
+
+**Frontend:**
+- ✅ Funcionalidade — telas de Colaboradores e Workshops, com detalhes e ata de presença
+- ✅ Estrutura do código — organização por camadas (api/context/components/pages), Clean Code
+- ✅ Estilo e layout — interface intuitiva e responsiva
+- ✅ Bônus — Integração real com o backend, gráfico de barras, gráfico de pizza, e CRUD completo pela interface (além da listagem exigida no enunciado)
+
+Todos os requisitos obrigatórios e bônus opcionais do desafio, tanto do Backend quanto do Frontend, foram implementados.
