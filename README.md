@@ -244,7 +244,7 @@ Use as mesmas credenciais fixas do backend:
 
 ## 🤖 Uso de Inteligência Artificial
 
-Utilizei o Claude (Anthropic) como apoio durante todo o desenvolvimento do projeto — tanto no Backend quanto no Frontend — para tirar dúvidas conceituais, revisar decisões de arquitetura e resolver problemas pontuais. Abaixo, destaco os momentos em que a IA influenciou decisões técnicas relevantes, com o contexto e a escolha final que tomei.
+Utilizei o Claude, Gemini e ChatGpt como apoio durante todo o desenvolvimento do projeto, tanto no Backend quanto no Frontend, para tirar dúvidas conceituais, revisar decisões de arquitetura e resolver problemas pontuais. Abaixo, destaco os momentos em que a IA influenciou decisões técnicas relevantes, com o contexto e a escolha final que tomei.
 
 ### 1. Como representar a presença de colaboradores em um workshop
 
